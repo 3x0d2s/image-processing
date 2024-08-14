@@ -56,4 +56,7 @@ def add_text_to_image(image: bytes, text: str, font_size: int) -> bytes:
     draw.text((text_x, text_y), text, fill=(255, 255, 255), font=font)
 
     new_image.save('output.jpg')
-    return new_image.tobytes()
+    output = io.BytesIO()
+    new_image.save(output, 'JPEG')
+    output.seek(0)
+    return output.read()

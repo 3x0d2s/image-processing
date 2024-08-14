@@ -1,11 +1,15 @@
 import io
-
-import redis
-from redis.exceptions import ConnectionError, DataError, NoScriptError, RedisError, ResponseError
+from datetime import datetime
 from functools import partial
 from typing import Iterator
-from image_processing import add_text_to_image
+
+import redis
+from PIL import Image
+from redis import ResponseError
+
 from config import config
+from db import SessionLocal
+from models import Image as ImageModel
 
 
 def get_messages(r: redis.Redis, **kwargs) -> Iterator[tuple[bytes, dict]]:
@@ -22,11 +26,20 @@ def get_messages(r: redis.Redis, **kwargs) -> Iterator[tuple[bytes, dict]]:
     return
 
 
-def image_processing(message_data: dict) -> bytes:
-    image: bytes = message_data[b'image']
-    description: str = message_data[b'description'].decode('utf-8')
-    image = add_text_to_image(image, description, config.FONT_SIZE)
-    return image
+def save_image(data: dict):
+    image_dt = datetime.fromtimestamp(float(data[b'dt']))
+    dt_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
+    image_file_name = f"image_{dt_str}.jpg"
+    img = Image.open(io.BytesIO(data[b'image']))
+    img.save(f"/tmp/media/{image_file_name}")
+    #
+    with SessionLocal() as session:
+        img = ImageModel(dt=image_dt,
+                         description=data[b'description'].decode('utf-8'),
+                         file_path=f"/tmp/media/{image_file_name}"
+                         )
+        session.add(img)
+        session.commit()
 
 
 def processing(r: redis.Redis):
@@ -40,7 +53,6 @@ def processing(r: redis.Redis):
     # handling hung messages
     for msg in get_messages(r, streams={stream_key: '0'}):
         msg_id, data = msg
-
         # Checking how many times the script tried to process this message
         [msg_info] = r.xpending_range(stream_key, group_key, min=msg_id, max=msg_id, count=1)
         times_delivered = msg_info['times_delivered']
@@ -48,19 +60,15 @@ def processing(r: redis.Redis):
             # This case means that an error occurs when processing this message
             pass
         else:
-            new_image = image_processing(message_data=data)
-            data[b'image'] = new_image
-            r.xadd(config.REDIS_OUTGOING_STREAM_KEY, data)
-
+            save_image(data)
+        #
         r.xack(stream_key, group_key, msg_id)
         r.xdel(stream_key, msg_id)
 
     # processing incoming messages
     for msg in get_messages(r, block=0, count=1, streams={stream_key: '>'}):
         msg_id, data = msg
-        new_image = image_processing(message_data=data)
-        data[b'image'] = new_image
-        r.xadd(config.REDIS_OUTGOING_STREAM_KEY, data)
+        save_image(data)
         #
         r.xack(stream_key, group_key, msg_id)
         r.xdel(stream_key, msg_id)
