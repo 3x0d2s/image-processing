@@ -3,17 +3,13 @@ import io
 from PIL import Image, ImageDraw, ImageFont
 
 
-def add_text_to_image(image: bytes, text: str, font_size: int) -> bytes:
-    # Открываем изображение
+def add_text_to_image(image: bytes, text: str, font_name: str, font_size: int) -> bytes:
     image = Image.open(io.BytesIO(image))
     image_width, image_height = image.size
 
-    # Настраиваем шрифт (DejaVuSans поддерживает кириллицу и встроен в PIL)
-    font = ImageFont.truetype('Arial.ttf', font_size)
+    font = ImageFont.truetype(font_name, font_size)
 
-    # Создаем объект для рисования
     dummy_draw = ImageDraw.Draw(image)
-
     # Разбиваем текст на строки, чтобы он помещался в заданную ширину
     lines = []
     words = text.split()
@@ -37,7 +33,6 @@ def add_text_to_image(image: bytes, text: str, font_size: int) -> bytes:
 
     # Определяем размеры текста
     text_bbox = dummy_draw.multiline_textbbox((0, 0), text, font=font)
-    # text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
 
     # Определяем высоту черного фона
@@ -46,7 +41,6 @@ def add_text_to_image(image: bytes, text: str, font_size: int) -> bytes:
 
     # Создаем новое изображение с дополнительным черным фоном
     new_image = Image.new('RGB', (image_width, new_image_height), color=(0, 0, 0))
-    # Вставляем исходное изображение в верхнюю часть нового изображения
     new_image.paste(image, (0, 0))
 
     # Рисуем текст внизу на черном фоне

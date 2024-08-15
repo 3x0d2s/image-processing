@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from config import config
 
 SQLALCHEMY_DATABASE_URL = str(config.PG_DSN)
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(bind=engine,
                             autocommit=False,
                             autoflush=False,
