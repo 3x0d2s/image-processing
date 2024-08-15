@@ -20,5 +20,5 @@ class RedisPubSubClient:
 
 
 redis_client = RedisPubSubClient(redis_dsn=str(config.REDIS_DSN),
-                                 stream_name=config.REDIS_STREAM_NAME
+                                 stream_name=config.REDIS_STREAM_TO_IMAGE_HANDLER_NAME
                                  )

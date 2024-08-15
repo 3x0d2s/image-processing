@@ -1,19 +1,18 @@
 import io
+import logging
 import reprlib
 from datetime import datetime
 from functools import partial
 from typing import Iterator
-import logging
+import psycopg2
 
 import redis
 from PIL import Image
 from redis import ResponseError
 
-from config import config
-from db import SessionLocal
-from models import Image as ImageModel
+from .config import config
 
-logging.basicConfig(level=logging.INFO, filename="logs/log.log", filemode="a",
+logging.basicConfig(level=logging.INFO, filename="src/logs/log.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 a_repr = reprlib.Repr()
 
@@ -21,8 +20,8 @@ a_repr = reprlib.Repr()
 def get_messages(r: redis.Redis, **kwargs) -> Iterator[tuple[bytes, dict]]:
     """ Генератор, отдающий входящие сообщения """
     xreadgroup = partial(r.xreadgroup,
-                         groupname=config.REDIS_GROUP_KEY,
-                         consumername=config.REDIS_CONSUMER_NAME,
+                         groupname=config.REDIS_DB_SAVER_GROUP_KEY,
+                         consumername=config.REDIS_DB_SAVER_CONSUMER_NAME,
                          count=5
                          )
     [[_, messages]] = xreadgroup(**kwargs)
@@ -34,6 +33,20 @@ def get_messages(r: redis.Redis, **kwargs) -> Iterator[tuple[bytes, dict]]:
     return
 
 
+def save_data_to_db(dt, description, file_path):
+    try:
+        conn = psycopg2.connect(str(config.PG_DSN))
+        cur = conn.cursor()
+        cur.execute('INSERT INTO "Image" (dt, description, file_path) VALUES (%s, %s, %s)',
+                    (dt, description, file_path))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logging.error(f"Data saving error: {e}")
+        raise e
+
+
 def save_image(data: dict):
     image_dt = datetime.fromtimestamp(float(data[b'dt']))
     dt_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
@@ -42,19 +55,15 @@ def save_image(data: dict):
     img.save(f"/tmp/media/{image_file_name}")
     logging.info("The image was saved successfully")
     #
-    with SessionLocal() as session:
-        img = ImageModel(dt=image_dt,
-                         description=data[b'description'].decode('utf-8'),
-                         file_path=f"/tmp/media/{image_file_name}"
-                         )
-        session.add(img)
-        session.commit()
-        logging.info("An entry with this image has been added to the database")
+    save_data_to_db(image_dt,
+                    data[b'description'].decode('utf-8'),
+                    f"/tmp/media/{image_file_name}")
+    logging.info("An entry with this image has been added to the database")
 
 
 def processing(r: redis.Redis):
-    stream_key = config.REDIS_INCOMING_STREAM_KEY
-    group_key = config.REDIS_GROUP_KEY
+    stream_key = config.REDIS_STREAM_TO_DB_SAVER_NAME
+    group_key = config.REDIS_DB_SAVER_GROUP_KEY
     try:
         r.xgroup_create(name=stream_key, groupname=group_key, id=0, mkstream=True)
     except ResponseError as e:

@@ -7,7 +7,7 @@ def add_text_to_image(image: bytes, text: str, font_name: str, font_size: int) -
     image = Image.open(io.BytesIO(image))
     image_width, image_height = image.size
 
-    font = ImageFont.truetype(font_name, font_size)
+    font = ImageFont.truetype(f"src/fonts/{font_name}", font_size)
 
     dummy_draw = ImageDraw.Draw(image)
     # Разбиваем текст на строки, чтобы он помещался в заданную ширину
@@ -49,7 +49,6 @@ def add_text_to_image(image: bytes, text: str, font_name: str, font_size: int) -
     text_y = image_height
     draw.text((text_x, text_y), text, fill=(255, 255, 255), font=font)
 
-    new_image.save('output.jpg')
     output = io.BytesIO()
     new_image.save(output, 'JPEG')
     output.seek(0)

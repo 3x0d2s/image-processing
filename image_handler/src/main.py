@@ -6,10 +6,10 @@ import logging
 import redis
 from redis.exceptions import ResponseError
 
-from config import config
-from image_processing import add_text_to_image
+from .config import config
+from .image_processing import add_text_to_image
 
-logging.basicConfig(level=logging.INFO, filename="logs/log.log", filemode="a",
+logging.basicConfig(level=logging.INFO, filename="src/logs/log.log", filemode="a",
                     format="%(asctime)s %(levelname)s %(message)s")
 a_repr = reprlib.Repr()
 
@@ -17,8 +17,8 @@ a_repr = reprlib.Repr()
 def get_messages(r: redis.Redis, **kwargs) -> Iterator[tuple[bytes, dict]]:
     """ Генератор, отдающий входящие сообщения """
     xreadgroup = partial(r.xreadgroup,
-                         groupname=config.REDIS_GROUP_KEY,
-                         consumername=config.REDIS_CONSUMER_NAME,
+                         groupname=config.REDIS_IMAGE_HANDLER_GROUP_KEY,
+                         consumername=config.REDIS_IMAGE_HANDLER_CONSUMER_NAME,
                          count=5
                          )
     [[_, messages]] = xreadgroup(**kwargs)
@@ -39,8 +39,8 @@ def image_processing(message_data: dict) -> bytes:
 
 
 def processing(r: redis.Redis):
-    stream_key = config.REDIS_INCOMING_STREAM_KEY
-    group_key = config.REDIS_GROUP_KEY
+    stream_key = config.REDIS_STREAM_TO_IMAGE_HANDLER_NAME
+    group_key = config.REDIS_IMAGE_HANDLER_GROUP_KEY
     try:
         r.xgroup_create(name=stream_key, groupname=group_key, id=0, mkstream=True)
     except ResponseError as e:
@@ -59,7 +59,7 @@ def processing(r: redis.Redis):
         else:
             new_image = image_processing(message_data=data)
             data[b'image'] = new_image
-            r.xadd(config.REDIS_OUTGOING_STREAM_KEY, data)
+            r.xadd(config.REDIS_STREAM_TO_DB_SAVER_NAME, data)
 
         r.xack(stream_key, group_key, msg_id)
         r.xdel(stream_key, msg_id)
@@ -69,7 +69,7 @@ def processing(r: redis.Redis):
         msg_id, data = msg
         new_image = image_processing(message_data=data)
         data[b'image'] = new_image
-        r.xadd(config.REDIS_OUTGOING_STREAM_KEY, data)
+        r.xadd(config.REDIS_STREAM_TO_DB_SAVER_NAME, data)
         logging.info("The image has been sent to the db service")
         #
         r.xack(stream_key, group_key, msg_id)

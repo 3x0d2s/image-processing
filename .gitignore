@@ -162,3 +162,8 @@ cython_debug/
 .idea/
 .python-version
 .DS_Store
+postgresql/
+media/
+
+db_saver_logs/
+image_handler_logs/
