@@ -4,7 +4,6 @@ services:
   api:
     image: test-task-api:latest
     container_name: test-task-api
-    restart: always
     depends_on:
       image-handler:
         condition: service_started
@@ -17,7 +16,6 @@ services:
   image-handler:
     image: image_handler:latest
     container_name: image-handler
-    restart: always
     depends_on:
       db_saver:
         condition: service_started
@@ -29,10 +27,9 @@ services:
   db_saver:
     image: db_saver:latest
     container_name: db_saver
-    restart: always
     depends_on:
       postgresql:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./media/:/code/src/media
       - ./.env:/code/.env
@@ -42,6 +39,11 @@ services:
     image: postgres:16.4-bullseye
     container_name: postgresql
     hostname: postgresql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d urbantech -U db_admin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     expose:
       - 5432
     volumes:

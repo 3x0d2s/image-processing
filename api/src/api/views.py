@@ -32,12 +32,13 @@ async def upload_image(file: Annotated[UploadFile, File(description='The image m
     try:
         image = Image.open(io.BytesIO(image_data))
         image_width, image_height = image.size
-        if not -100 <= image_width - 640 <= 100 or not -100 <= image_height - 480 <= 100:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                detail="Image size must be 640x480px (+-100px)")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Invalid image")
+
+    if not -100 <= image_width - 640 <= 100 or not -100 <= image_height - 480 <= 100:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Image size must be 640x480px (+-100px)")
 
     data = {
         'image': image_data,

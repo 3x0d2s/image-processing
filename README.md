@@ -40,7 +40,22 @@ cp example.env .env
 
 Для изменения размера шрифта требуется изменить значение переменной **FONT_SIZE** в файле **.env** 
 
-## 4. Запуск
+## 4. Сборка образов
+
+```shell
+cd api/
+docker build -t test-task-api:latest .
+```
+```shell
+cd image_handler/
+docker build -t image_handler:latest .
+```
+```shell
+cd db_saver/
+docker build -t db_saver:latest .
+```
+
+## 5. Запуск
 
 ```shell
 docker-compose up -d
