@@ -167,3 +167,5 @@ media/
 
 db_saver_logs/
 image_handler_logs/
+
+docker-compose.yml

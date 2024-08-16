@@ -52,12 +52,12 @@ def save_image(data: dict):
     dt_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S.%f")
     image_file_name = f"image_{dt_str}.jpg"
     img = Image.open(io.BytesIO(data[b'image']))
-    img.save(f"/tmp/media/{image_file_name}")
+    img.save(f"src/media/{image_file_name}")
     logging.info("The image was saved successfully")
     #
     save_data_to_db(image_dt,
                     data[b'description'].decode('utf-8'),
-                    f"/tmp/media/{image_file_name}")
+                    f"src/media/{image_file_name}")
     logging.info("An entry with this image has been added to the database")
 
 

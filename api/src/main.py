@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.redis_client import redis_client
-from app.views import router as views_router
+from .services.redis_client import redis_client
+from .api.views import router as views_router
 
 
 @asynccontextmanager

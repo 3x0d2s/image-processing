@@ -1,5 +1,5 @@
 import redis.asyncio as redis
-from app.config import config
+from src.core.config import config
 
 
 class RedisPubSubClient:

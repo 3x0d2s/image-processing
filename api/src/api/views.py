@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, status, Query, File, UploadFile, HTTPExc
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud import ImageCrud
-from app.db import get_db_session
-from app.redis_client import redis_client
-from app.schemas import ImageRead
+from src.database.crud import ImageCrud
+from src.database.db import get_db_session
+from src.services.redis_client import redis_client
+from src.api.schemas import ImageRead
 
 router = APIRouter(tags=['Images'])
 

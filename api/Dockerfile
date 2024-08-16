@@ -23,16 +23,17 @@ ENV PATH "/app/.venv/bin:$PATH"
 
 COPY --from=builder /app /app
 #
-RUN mkdir -p /code/app \
-             /code/migrations \
-             /tmp/media
+RUN mkdir -p \
+    /code/src \
+    /code/migrations \
+    /code/src/media
 WORKDIR /code
 COPY ./migrations /code/migrations
 COPY ./alembic.ini .
-COPY ./app /code/app
+COPY ./src /code/src
 
 RUN touch /code/.env
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic upgrade head; uvicorn app.main:app --host 0.0.0.0 --port 80"]
+CMD ["sh", "-c", "alembic upgrade head; uvicorn src.main:app --host 0.0.0.0 --port 80"]

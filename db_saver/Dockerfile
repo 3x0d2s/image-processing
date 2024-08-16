@@ -23,8 +23,9 @@ ENV PATH "/app/.venv/bin:$PATH"
 
 COPY --from=builder /app /app
 #
-RUN mkdir -p /code/src \
-             /tmp/media
+RUN mkdir -p \
+    /code/src \
+    /code/src/media
 WORKDIR /code
 COPY ./src /code/src
 

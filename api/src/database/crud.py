@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models import Image
+from src.database.models import Image
 from typing import Sequence
 
 

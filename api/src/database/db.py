@@ -3,7 +3,7 @@ from typing import Iterator
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import registry
-from app.config import config
+from src.core.config import config
 
 SQLALCHEMY_DATABASE_URL = str(config.PG_DSN)
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=False)
