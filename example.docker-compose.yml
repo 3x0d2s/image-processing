@@ -10,7 +10,7 @@ services:
     ports:
       - "8001:80"
     volumes:
-      - ./media:/code/src/media
+      - ./media:/media
       - ./.env:/code/.env
 
   image-handler:
@@ -31,9 +31,9 @@ services:
       postgresql:
         condition: service_healthy
     volumes:
-      - ./media/:/code/src/media
-      - ./.env:/code/.env
-      - ./db_saver_logs:/code/src/logs
+      - ./media/:/media
+      - ./.env:/app/.env
+      - ./db_saver_logs:/app/logs
 
   postgresql:
     image: postgres:16.4-bullseye
