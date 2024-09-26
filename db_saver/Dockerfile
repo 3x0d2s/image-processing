@@ -1,36 +1,32 @@
-FROM python:3.10.14-bookworm AS builder
+FROM golang:alpine AS builder
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.7.1 \
-    # not to ask any interactive questions
-    POETRY_NO_INTERACTION=1 \
-    PATH="/root/.local/bin:${PATH}"
+LABEL stage=gobuilder
 
-RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    poetry config virtualenvs.in-project true
+ENV CGO_ENABLED=0
+ENV GOOS=linux
+
+RUN apk update --no-cache && apk add --no-cache tzdata
+
+WORKDIR /build
+
+ADD go.mod .
+ADD go.sum .
+
+RUN go mod download
+
+COPY . .
+
+RUN go build -o /app/main ./main.go
+
+FROM alpine
+
+RUN apk update --no-cache && apk add --no-cache ca-certificates
+
+COPY --from=builder /usr/share/zoneinfo/Europe/Moscow /usr/share/zoneinfo/Europe/Moscow
+ENV TZ=Europe/Moscow
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+COPY --from=builder /app/main /app/main
 
-RUN poetry install --no-root --only main && yes | poetry cache clear . --all
-
-FROM python:3.10.14-slim-bookworm as runtime
-
-ENV PATH "/app/.venv/bin:$PATH"
-
-COPY --from=builder /app /app
-#
-RUN mkdir -p \
-    /code/src \
-    /code/src/media
-WORKDIR /code
-COPY ./src /code/src
-
-RUN touch ./.env
-
-EXPOSE 8000
-
-CMD ["python3", "-m", "src.main"]
+CMD ["./main"]
