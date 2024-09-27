@@ -10,7 +10,7 @@ services:
     ports:
       - "8001:80"
     volumes:
-      - ./media:/code/src/media
+      - ./media:/media
       - ./.env:/code/.env
 
   image-handler:
@@ -31,16 +31,16 @@ services:
       postgresql:
         condition: service_healthy
     volumes:
-      - ./media/:/code/src/media
-      - ./.env:/code/.env
-      - ./db_saver_logs:/code/src/logs
+      - ./media/:/media
+      - ./.env:/app/.env
+      - ./db_saver_logs:/app/logs
 
   postgresql:
     image: postgres:16.4-bullseye
     container_name: postgresql
     hostname: postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d urbantech -U db_admin" ]
+      test: [ "CMD-SHELL", "pg_isready -d tmp_db -U db_admin" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -51,7 +51,7 @@ services:
     environment:
       POSTGRES_USER: db_admin
       POSTGRES_PASSWORD: localpass
-      POSTGRES_DB: urbantech
+      POSTGRES_DB: tmp_db
 
   redis:
     image: redis/redis-stack-server:latest

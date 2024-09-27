@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "urbantech-test-task"
+name = "image-processing-api"
 version = "0.1.0"
 description = ""
 authors = ["Максим Жданов <exodus.yarwood@icloud.com>"]

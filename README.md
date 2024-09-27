@@ -1,12 +1,24 @@
-# urbantech-test-task
+# image-processing 
+
+## Описание проекта
+
+Данный проект представляет собой систему обработки изображений, разделенную на три ключевых компонента: 
+
+1. API - интерфейс для взаимодействия с пользователем.
+2. Служба обработки изображений - отвечает за выполнение трансформаций, включая добавление текста на изображение.
+3. Служба сохранения данных - обеспечивает хранение обработанных изображений в базе данных.
+
+### Как это работает:
+Пользователь отправляет запрос через API с изображением и текстом для добавления. API передает задачу на обработку в специальную службу. После завершения обработки, обработанное изображение сохраняется в БД через службу сохранения. 
+
 
 # Запуск в контейнере
 
 ## 1. Клониронивае репозитория
 
 ```shell
-git clone https://github.com/3x0d2s/urbantech-test-task.git
-cd urbantech-test-task/
+git clone https://github.com/3x0d2s/image-processing.git
+cd image-processing/
 ```
 
 ## 2. Создание docker-compose файла
@@ -70,8 +82,7 @@ docker-compose up -d
 
 # Запуск по отдельности каждой службы
 
-Предполагается наличие **Python 3.10**, запущенных PostgreSQL и Redis с модулем redis-search, а так же установленного 
-пакетного менеджера [Poetry](https://python-poetry.org/docs/#installation).
+Предполагается наличие **Python 3.10** и Golang в системе, запущенных PostgreSQL и Redis с модулем redis-search, а так же установленного пакетного менеджера [Poetry](https://python-poetry.org/docs/#installation).
 
 ## API
 
@@ -116,8 +127,5 @@ cp example.env .env
 Требуется отредактировать файл **.env** для конфигурации строк подключения к PostgreSQL и Redis.
 
 ```shell
-poetry env use python3.10
-poetry install
-poetry shell
-python -m src.main
+go run main.go
 ```

@@ -11,6 +11,7 @@ from src.database.crud import ImageCrud
 from src.database.db import get_db_session
 from src.services.redis_client import redis_client
 from src.api.schemas import ImageRead
+from src.core.config import config
 
 router = APIRouter(tags=['Images'])
 
@@ -83,4 +84,5 @@ async def get_image(image_id: Annotated[int, Path(gt=0, description='Image ID')]
     if img is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                              detail="Image not found")
-    return FileResponse(path=img.file_path)
+    return FileResponse(path=f"{config.MEDIA_ROOT}/{img.file_path}")
+
