@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "image-handler"
+name = "image-processing-image-handler"
 version = "0.1.0"
 description = ""
 authors = ["Максим Жданов <exodus.yarwood@icloud.com>"]

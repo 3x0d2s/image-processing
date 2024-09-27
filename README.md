@@ -1,12 +1,12 @@
-# urbantech-test-task
+# image-processing 
 
 # Запуск в контейнере
 
 ## 1. Клониронивае репозитория
 
 ```shell
-git clone https://github.com/3x0d2s/urbantech-test-task.git
-cd urbantech-test-task/
+git clone https://github.com/3x0d2s/image-processing.git
+cd image-processing/
 ```
 
 ## 2. Создание docker-compose файла
@@ -70,8 +70,7 @@ docker-compose up -d
 
 # Запуск по отдельности каждой службы
 
-Предполагается наличие **Python 3.10**, запущенных PostgreSQL и Redis с модулем redis-search, а так же установленного 
-пакетного менеджера [Poetry](https://python-poetry.org/docs/#installation).
+Предполагается наличие **Python 3.10** и Golang в системе, запущенных PostgreSQL и Redis с модулем redis-search, а так же установленного пакетного менеджера [Poetry](https://python-poetry.org/docs/#installation).
 
 ## API
 
@@ -116,8 +115,5 @@ cp example.env .env
 Требуется отредактировать файл **.env** для конфигурации строк подключения к PostgreSQL и Redis.
 
 ```shell
-poetry env use python3.10
-poetry install
-poetry shell
-python -m src.main
+go run main.go
 ```
